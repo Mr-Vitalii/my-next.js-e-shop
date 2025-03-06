@@ -11,8 +11,6 @@ export const formatNumberWithDecimal = (num: number): string => {
   return decimal ? `${int}.${decimal.padEnd(2, '0')}` : int
 }
 
-//* Короткая версия
-/* const formatNumberWithDecimal = (num: number): string => num.toFixed(2); */
 
 //* Переводит строку в slug формат (для URL)
 export const toSlug = (text: string): string =>
@@ -23,3 +21,18 @@ export const toSlug = (text: string): string =>
     .replace(/^-+|-+$/g, '') //  Убираем дефисы в начале и конце строки
     .replace(/-+/g, '-')  // Убираем повторяющиеся дефисы
 
+
+  const CURRENCY_FORMATTER = new Intl.NumberFormat('en-US', {
+  currency: 'USD',
+  style: 'currency',
+  minimumFractionDigits: 2,
+  })
+
+export function formatCurrency(amount: number) {
+  return CURRENCY_FORMATTER.format(amount)
+}
+
+const NUMBER_FORMATTER = new Intl.NumberFormat('en-US')
+export function formatNumber(number: number) {
+  return NUMBER_FORMATTER.format(number)
+}
