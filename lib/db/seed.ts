@@ -3,29 +3,34 @@ import { cwd } from 'process' // Импорт функции cwd() для пол
 import data from '@/lib/data'
 import { connectToDatabase } from '.'
 import Product from './models/product.model'
-
-
-/* loadEnvConfig
-В Next.js переменные окружения из.env.local, .env.development, .env.production автоматически загружаются
- в next dev, next build и next start, но если код выполняется вне Next.js(например, в скрипте), переменные окружения не загружаются автоматически.
-loadEnvConfig(cwd()) гарантирует, что переменные из .env файлов будут загружены даже при выполнении кода вне стандартного окружения Next.js. */
-
-loadEnvConfig(cwd()) // Загружаем переменные окружения из .env в текущей директории
+import User from './models/user.model'
 
 
 
-/* Этот код выполняет наполнение базы данных (seeding) в MongoDB с использованием Mongoose Этот код используется для первоначального наполнения базы данными. 
- */const main = async () => {
+
+loadEnvConfig(cwd()) 
+
+
+
+
+ const main = async () => {
   try {
-    const { products } = data // Получаем products из data.
-    await connectToDatabase(process.env.MONGODB_URI) // Подключаемся к базе данных
-    await Product.deleteMany() // Удаляем все товары из базы, чтобы очистить её перед добавлением новых данных.
-    const createdProducts = await Product.insertMany(products) // Добавляем новые товары в базу (products из data).
+    const { products, users } = data 
+    await connectToDatabase(process.env.MONGODB_URI) 
+
+     await User.deleteMany()
+    const createdUser = await User.insertMany(users)
+
+    await Product.deleteMany() 
+    const createdProducts = await Product.insertMany(products) 
+
+
     console.log({
+      createdUser,
       createdProducts,
       message: 'Seeded database successfully',
     })
-    process.exit(0) // Завершаем процесс после успешного выполнения.
+    process.exit(0) 
 
   } catch (error) {
     console.error(error)
