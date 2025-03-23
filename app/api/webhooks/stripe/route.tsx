@@ -6,10 +6,6 @@ import Order from '@/lib/db/models/order.model'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string)
 
-const xxx = process.env.STRIPE_WEBHOOK_SECRET as string
-
-console.log(xxx)
-
 export async function POST(req: NextRequest) {
   const event = await stripe.webhooks.constructEvent(
     await req.text(),
@@ -23,6 +19,7 @@ export async function POST(req: NextRequest) {
     const email = charge.billing_details.email
     const pricePaidInCents = charge.amount
     const order = await Order.findById(orderId).populate('user', 'email')
+
     if (order == null) {
       return new NextResponse('Bad Request', { status: 400 })
     }

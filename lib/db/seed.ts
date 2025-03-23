@@ -11,8 +11,6 @@ import User from './models/user.model'
 loadEnvConfig(cwd()) 
 
 
-
-
  const main = async () => {
   try {
     const { products, users } = data 
