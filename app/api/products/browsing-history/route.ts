@@ -32,7 +32,6 @@ export const GET = async (request: NextRequest) => {
       )
     )
   
-  console.log(products);
   
   
   return NextResponse.json(products)
