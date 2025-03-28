@@ -2,7 +2,7 @@
 
 import { Cart, OrderItem, ShippingAddress } from '@/types'
 import { formatError, round2 } from '../utils'
-import { AVAILABLE_DELIVERY_DATES } from '../constants'
+import { AVAILABLE_DELIVERY_DATES, PAGE_SIZE } from '../constants'
 import { connectToDatabase } from '../db'
 import { auth } from '@/auth'
 import { OrderInputSchema } from '../validator'
@@ -10,7 +10,6 @@ import Order, { IOrder } from '../db/models/order.model'
 import { paypal } from '../paypal'
 import { sendPurchaseReceipt } from '@/emails'
 import { revalidatePath } from 'next/cache'
-
 
 // CREATE
 export const createOrder = async (clientSideCart: Cart) => {
@@ -60,13 +59,39 @@ export const createOrderFromCart = async (
   return await Order.create(order)
 }
 
+export async function getMyOrders({
+  limit,
+  page,
+}: {
+  limit?: number
+  page: number
+}) {
+  limit = limit || PAGE_SIZE
+  await connectToDatabase()
+  const session = await auth()
+  if (!session) {
+    throw new Error('User is not authenticated')
+  }
+  const skipAmount = (Number(page) - 1) * limit
+  const orders = await Order.find({
+    user: session?.user?.id,
+  })
+    .sort({ createdAt: 'desc' })
+    .skip(skipAmount)
+    .limit(limit)
+  const ordersCount = await Order.countDocuments({ user: session?.user?.id })
+
+  return {
+    data: JSON.parse(JSON.stringify(orders)),
+    totalPages: Math.ceil(ordersCount / limit),
+  }
+}
 
 export async function getOrderById(orderId: string): Promise<IOrder> {
   await connectToDatabase()
   const order = await Order.findById(orderId)
   return JSON.parse(JSON.stringify(order))
 }
-
 
 export async function createPayPalOrder(orderId: string) {
   await connectToDatabase()
@@ -93,7 +118,6 @@ export async function createPayPalOrder(orderId: string) {
     return { success: false, message: formatError(err) }
   }
 }
-
 
 export async function approvePayPalOrder(
   orderId: string,
@@ -132,54 +156,49 @@ export async function approvePayPalOrder(
   }
 }
 
+export const calcDeliveryDateAndPrice = async ({
+  items,
+  shippingAddress,
+  deliveryDateIndex,
+}: {
+  deliveryDateIndex?: number
+  items: OrderItem[]
+  shippingAddress?: ShippingAddress
+}) => {
+  const itemsPrice = round2(
+    items.reduce((acc, item) => acc + item.price * item.quantity, 0)
+  )
 
-
-
-  export const calcDeliveryDateAndPrice = async ({
-    items,
-    shippingAddress,
-    deliveryDateIndex
-  }: {
-    deliveryDateIndex?: number
-    items: OrderItem[]
-    shippingAddress?: ShippingAddress
-  }) => {
-    const itemsPrice = round2(
-      items.reduce((acc, item) => acc + item.price * item.quantity, 0)
-    )
-
-    const deliveryDate =
-      AVAILABLE_DELIVERY_DATES[
+  const deliveryDate =
+    AVAILABLE_DELIVERY_DATES[
       deliveryDateIndex === undefined
         ? AVAILABLE_DELIVERY_DATES.length - 1
         : deliveryDateIndex
-      ]
+    ]
 
-    const shippingPrice =
-      !shippingAddress || !deliveryDate
-        ? undefined
-        : deliveryDate.freeShippingMinPrice > 0 &&
+  const shippingPrice =
+    !shippingAddress || !deliveryDate
+      ? undefined
+      : deliveryDate.freeShippingMinPrice > 0 &&
           itemsPrice >= deliveryDate.freeShippingMinPrice
-          ? 0
-          : deliveryDate.shippingPrice
+        ? 0
+        : deliveryDate.shippingPrice
 
-
-
-    const taxPrice = round2(itemsPrice * 0.15)
-    const totalPrice = round2(
-      itemsPrice +
+  const taxPrice = round2(itemsPrice * 0.15)
+  const totalPrice = round2(
+    itemsPrice +
       (shippingPrice ? round2(shippingPrice) : 0) +
       (taxPrice ? round2(taxPrice) : 0)
-    )
-    return {
-      AVAILABLE_DELIVERY_DATES,
-      deliveryDateIndex:
-        deliveryDateIndex === undefined
-          ? AVAILABLE_DELIVERY_DATES.length - 1
-          : deliveryDateIndex,
-      itemsPrice,
-      shippingPrice,
-      taxPrice,
-      totalPrice,
-    }
+  )
+  return {
+    AVAILABLE_DELIVERY_DATES,
+    deliveryDateIndex:
+      deliveryDateIndex === undefined
+        ? AVAILABLE_DELIVERY_DATES.length - 1
+        : deliveryDateIndex,
+    itemsPrice,
+    shippingPrice,
+    taxPrice,
+    totalPrice,
   }
+}

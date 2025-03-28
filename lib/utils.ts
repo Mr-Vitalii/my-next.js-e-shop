@@ -1,5 +1,29 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { clsx, type ClassValue } from 'clsx'
+import { twMerge } from 'tailwind-merge'
+
+import qs from 'query-string'
+
+export function formUrlQuery({
+  params,
+  key,
+  value,
+}: {
+  params: string
+  key: string
+  value: string | null
+}) {
+  const currentUrl = qs.parse(params)
+
+  currentUrl[key] = value
+
+  return qs.stringifyUrl(
+    {
+      url: window.location.pathname,
+      query: currentUrl,
+    },
+    { skipNull: true }
+  )
+}
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -11,7 +35,6 @@ export const formatNumberWithDecimal = (num: number): string => {
   return decimal ? `${int}.${decimal.padEnd(2, '0')}` : int
 }
 
-
 //* Переводит строку в slug формат (для URL)
 export const toSlug = (text: string): string =>
   text
@@ -19,14 +42,13 @@ export const toSlug = (text: string): string =>
     .replace(/[^\w\s-]+/g, '') // Удаляем все символы, кроме букв, цифр, пробелов и дефисов
     .replace(/\s+/g, '-') // Заменяем пробелы на дефисы
     .replace(/^-+|-+$/g, '') //  Убираем дефисы в начале и конце строки
-    .replace(/-+/g, '-')  // Убираем повторяющиеся дефисы
+    .replace(/-+/g, '-') // Убираем повторяющиеся дефисы
 
-
-  const CURRENCY_FORMATTER = new Intl.NumberFormat('en-US', {
+const CURRENCY_FORMATTER = new Intl.NumberFormat('en-US', {
   currency: 'USD',
   style: 'currency',
   minimumFractionDigits: 2,
-  })
+})
 
 export function formatCurrency(amount: number) {
   return CURRENCY_FORMATTER.format(amount)
@@ -36,7 +58,6 @@ const NUMBER_FORMATTER = new Intl.NumberFormat('en-US')
 export function formatNumber(number: number) {
   return NUMBER_FORMATTER.format(number)
 }
-
 
 export const round2 = (num: number) =>
   Math.round((num + Number.EPSILON) * 100) / 100
@@ -68,8 +89,6 @@ export const formatError = (error: any): string => {
   }
 }
 
-
-
 export function calculateFutureDate(days: number) {
   const currentDate = new Date()
   currentDate.setDate(currentDate.getDate() + days)
@@ -88,13 +107,11 @@ export function getMonthName(yearMonth: string): string {
   return monthName
 }
 
-
 export function calculatePastDate(days: number) {
   const currentDate = new Date()
   currentDate.setDate(currentDate.getDate() - days)
   return currentDate
 }
-
 
 export function timeUntilMidnight(): { hours: number; minutes: number } {
   const now = new Date()
@@ -107,8 +124,6 @@ export function timeUntilMidnight(): { hours: number; minutes: number } {
 
   return { hours, minutes }
 }
-
-
 
 export const formatDateTime = (dateString: Date) => {
   const dateTimeOptions: Intl.DateTimeFormatOptions = {
