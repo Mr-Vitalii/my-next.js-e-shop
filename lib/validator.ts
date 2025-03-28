@@ -12,10 +12,9 @@ const Price = (field: string) =>
     .refine(
       (value) => /^\d+(\.\d{2})?$/.test(formatNumberWithDecimal(value)),
       `${field} must have exactly two decimal places (e.g., 49.99)`
-  )
+    )
 
-
-  export const ReviewInputSchema = z.object({
+export const ReviewInputSchema = z.object({
   product: MongoId,
   user: MongoId,
   isVerifiedPurchase: z.boolean(),
@@ -27,11 +26,9 @@ const Price = (field: string) =>
     .min(1, 'Rating must be at least 1')
     .max(5, 'Rating must be at most 5'),
 })
-    
 
-
-  //* Валидация каждого продукта который добавляется
-  export const ProductInputSchema = z.object({
+//* Валидация каждого продукта который добавляется
+export const ProductInputSchema = z.object({
   name: z.string().min(3, 'Name must be at least 3 characters'),
   slug: z.string().min(3, 'Slug must be at least 3 characters'),
   category: z.string().min(1, 'Category is required'),
@@ -58,15 +55,15 @@ const Price = (field: string) =>
     .nonnegative('Number of reviews must be a non-negative number'),
   ratingDistribution: z
     .array(z.object({ rating: z.number(), count: z.number() }))
-      .max(5),
+    .max(5),
   reviews: z.array(ReviewInputSchema).default([]),
   numSales: z.coerce
     .number()
     .int()
     .nonnegative('Number of sales must be a non-negative number'),
-  })
+})
 
-  // Order Item
+// Order Item
 export const OrderItemSchema = z.object({
   clientId: z.string().min(1, 'clientId is required'),
   product: z.string().min(1, 'Product is required'),
@@ -87,7 +84,6 @@ export const OrderItemSchema = z.object({
   color: z.string().optional(),
 })
 
-
 export const ShippingAddressSchema = z.object({
   fullName: z.string().min(1, 'Full name is required'),
   street: z.string().min(1, 'Address is required'),
@@ -97,7 +93,6 @@ export const ShippingAddressSchema = z.object({
   phone: z.string().min(1, 'Phone number is required'),
   country: z.string().min(1, 'Country is required'),
 })
-
 
 // Order
 export const OrderInputSchema = z.object({
@@ -137,11 +132,7 @@ export const OrderInputSchema = z.object({
   paidAt: z.date().optional(),
 })
 
-
-
 // Cart
-
-
 
 export const CartSchema = z.object({
   items: z
@@ -157,18 +148,15 @@ export const CartSchema = z.object({
   expectedDeliveryDate: z.optional(z.date()),
 })
 
-
-
 // USER
 const UserName = z
   .string()
   .min(2, { message: 'Username must be at least 2 characters' })
   .max(50, { message: 'Username must be at most 30 characters' })
-  
+
 const Email = z.string().min(1, 'Email is required').email('Email is invalid')
 const Password = z.string().min(3, 'Password must be at least 3 characters')
 const UserRole = z.string().min(1, 'role is required')
-
 
 export const UserInputSchema = z.object({
   name: UserName,
@@ -189,13 +177,10 @@ export const UserInputSchema = z.object({
   }),
 })
 
-
-
 export const UserSignInSchema = z.object({
   email: Email,
   password: Password,
 })
-
 
 export const UserSignUpSchema = UserSignInSchema.extend({
   name: UserName,
@@ -203,4 +188,8 @@ export const UserSignUpSchema = UserSignInSchema.extend({
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ['confirmPassword'],
+})
+
+export const UserNameSchema = z.object({
+  name: UserName,
 })
