@@ -67,7 +67,7 @@ export default function ThemeSwitcher() {
                 style={{ backgroundColor: c.name }}
                 className="h-4 w-4 mr-1 rounded-full"
               ></div>
-              (c.name)
+              {c.name}
             </DropdownMenuRadioItem>
           ))}
         </DropdownMenuRadioGroup>

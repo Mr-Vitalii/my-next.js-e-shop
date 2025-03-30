@@ -11,7 +11,7 @@ import CartButton from './cart-button'
 import UserButton from './user-button'
 import ThemeSwitcher from './theme-switcher'
 
-const Menu = ({ forAdmin = false }: { forAdmin?: boolean }) => {
+export default function Menu({ forAdmin = false }: { forAdmin?: boolean }) {
   return (
     <div className="flex justify-end">
       <nav className="md:flex gap-3 hidden w-full">
@@ -40,5 +40,3 @@ const Menu = ({ forAdmin = false }: { forAdmin?: boolean }) => {
     </div>
   )
 }
-
-export default Menu
