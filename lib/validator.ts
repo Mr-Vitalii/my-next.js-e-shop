@@ -61,6 +61,11 @@ export const ProductInputSchema = z.object({
     .number()
     .int()
     .nonnegative('Number of sales must be a non-negative number'),
+  _id: z.string().optional(),
+})
+
+export const ProductUpdateSchema = ProductInputSchema.extend({
+  _id: z.string(),
 })
 
 // Order Item
