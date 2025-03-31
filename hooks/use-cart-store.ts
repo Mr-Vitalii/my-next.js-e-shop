@@ -4,7 +4,6 @@ import { persist } from 'zustand/middleware'
 import { Cart, OrderItem, ShippingAddress } from '@/types'
 import { calcDeliveryDateAndPrice } from '@/lib/actions/order.actions'
 
-
 const initialState: Cart = {
   items: [],
   itemsPrice: 0,
@@ -18,7 +17,7 @@ const initialState: Cart = {
 
 interface CartState {
   cart: Cart
-  
+
   addItem: (item: OrderItem, quantity: number) => Promise<string>
   updateItem: (item: OrderItem, quantity: number) => Promise<void>
   removeItem: (item: OrderItem) => void
@@ -27,7 +26,6 @@ interface CartState {
   setPaymentMethod: (paymentMethod: string) => void
   setDeliveryDateIndex: (index: number) => Promise<void>
 }
-
 
 const useCartStore = create(
   persist<CartState>(
@@ -52,17 +50,17 @@ const useCartStore = create(
             throw new Error('Not enough items in stock')
           }
         }
-        
+
         const updatedCartItems = existItem
           ? items.map((x) =>
-            x.product === item.product &&
+              x.product === item.product &&
               x.color === item.color &&
               x.size === item.size
-              ? { ...existItem, quantity: existItem.quantity + quantity }
-              : x
-          )
+                ? { ...existItem, quantity: existItem.quantity + quantity }
+                : x
+            )
           : [...items, { ...item, quantity }]
-        
+
         set({
           cart: {
             ...get().cart,
@@ -72,14 +70,19 @@ const useCartStore = create(
             })),
           },
         })
-        
-        return updatedCartItems.find(
+
+        const foundItem = updatedCartItems.find(
           (x) =>
             x.product === item.product &&
             x.color === item.color &&
-            x.size == item.size
-        )?.clientId ?? "default-client-id";
+            x.size === item.size
+        )
+        if (!foundItem) {
+          throw new Error('Item not found in cart')
+        }
+        return foundItem.clientId
       },
+
       updateItem: async (item: OrderItem, quantity: number) => {
         const { items, shippingAddress } = get().cart
         const exist = items.find(
@@ -102,7 +105,7 @@ const useCartStore = create(
             items: updatedCartItems,
             ...(await calcDeliveryDateAndPrice({
               items: updatedCartItems,
-              shippingAddress
+              shippingAddress,
             })),
           },
         })
@@ -121,7 +124,7 @@ const useCartStore = create(
             items: updatedCartItems,
             ...(await calcDeliveryDateAndPrice({
               items: updatedCartItems,
-              shippingAddress
+              shippingAddress,
             })),
           },
         })
@@ -147,7 +150,7 @@ const useCartStore = create(
           },
         })
       },
-         setDeliveryDateIndex: async (index: number) => {
+      setDeliveryDateIndex: async (index: number) => {
         const { items, shippingAddress } = get().cart
 
         set({
@@ -161,7 +164,7 @@ const useCartStore = create(
           },
         })
       },
-         clearCart: () => {
+      clearCart: () => {
         set({
           cart: {
             ...get().cart,
@@ -175,6 +178,6 @@ const useCartStore = create(
       name: 'cart-storage',
     }
   )
-) 
+)
 
 export default useCartStore

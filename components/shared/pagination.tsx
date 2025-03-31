@@ -6,6 +6,7 @@ import React from 'react'
 import { formUrlQuery } from '@/lib/utils'
 
 import { Button } from '../ui/button'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 type PaginationProps = {
   page: number | string
@@ -38,9 +39,9 @@ const Pagination = ({ page, totalPages, urlParamName }: PaginationProps) => {
         disabled={Number(page) <= 1}
         className="w-24"
       >
-        Previous
+        <ChevronLeft /> Previous
       </Button>
-
+      Page {page} of {totalPages}
       <Button
         size="lg"
         variant="outline"
@@ -48,7 +49,7 @@ const Pagination = ({ page, totalPages, urlParamName }: PaginationProps) => {
         disabled={Number(page) >= totalPages}
         className="w-24"
       >
-        Next
+        Next <ChevronRight />
       </Button>
     </div>
   )
